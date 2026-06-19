@@ -1,0 +1,82 @@
+#include <stdio.h>
+#include <math.h>
+
+#define PI 3.14159265358979323846
+
+/* 前進オイラー法を使った際の100周期後の誤差計算 */
+double euler(double dt) 
+{
+    double T = 2.0 * PI;
+    int steps = (int)(100.0 * T / dt);
+
+    /* 初期条件: x=1, v=0 */
+    double x = 1.0;
+    double v = 0.0;
+
+    int i;
+    for (i = 0; i < steps; i++) 
+    {
+        double ax = v;
+        double av = -x;
+        x = x + dt * ax;
+        v = v + dt * av;
+    }
+
+    double dx = x - 1.0;
+    double dv = v - 0.0;
+    /*誤差のノルム*/
+    return sqrt(dx * dx + dv * dv);
+}
+
+/* Runge-Kutta法(4段4次)を使った際の100周期後の誤差計算 */
+double runge_kutta(double dt) 
+{
+    double T = 2.0 * PI;
+    int steps = (int)(100.0 * T / dt);
+
+    /* 初期条件: x=1, v=0 */
+    double x = 1.0;
+    double v = 0.0;
+
+    int i;
+    for (i = 0; i < steps; i++)
+    {
+        double k1x = v;
+        double k1v = -x;
+
+        double k2x = v + dt / 2.0 * k1v;
+        double k2v = -(x + dt / 2.0 * k1x);
+
+        double k3x = v + dt / 2.0 * k2v;
+        double k3v = -(x + dt / 2.0 * k2x);
+
+        double k4x = v + dt * k3v;
+        double k4v = -(x + dt * k3x);
+
+        x = x + dt / 6.0 * (k1x + 2.0 * k2x + 2.0 * k3x + k4x);
+        v = v + dt / 6.0 * (k1v + 2.0 * k2v + 2.0 * k3v + k4v);
+    }
+
+    /* 正確な解: x=1, v=0 */
+    double dx = x - 1.0;
+    double dv = v - 0.0;
+    return sqrt(dx * dx + dv * dv);
+}
+
+/*メイン関数*/
+int main(void) 
+{
+    double T = 2.0 * PI;
+
+    printf("dt           Euler誤差       RK4誤差\n");
+
+    int n;
+    for (n = 1; n <= 2048; n = n * 2) {
+        double dt = T / n;
+        double e_euler = euler(dt);
+        double e_rk4   = runge_kutta(dt);
+        printf("T/%-4d  %14.6e  %14.6e\n", n, e_euler, e_rk4);
+    }
+
+    return 0;
+}
