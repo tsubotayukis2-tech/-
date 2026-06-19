@@ -1,0 +1,61 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+/*構造体を作る*/
+typedef struct
+{
+    double ra, dec, parallax, g, b, r;
+} Star;
+
+
+/*qsortに読ませるための関数を作る*/
+int cmp_star (const void *a, const void *b)
+{
+    if ( ((Star*)a)-> parallax < ((Star*)b)-> parallax )
+        return 1;
+    else if ( ((Star*)a)-> parallax > ((Star*)b)-> parallax )
+        return -1;
+    else
+        return 0;
+}
+
+/*main、データの読み込みとqsort*/
+int main(void)
+{
+    const int N = 4271;
+    Star d[N];
+
+    FILE *fp;
+    fp = fopen("ngc6397.dat", "r");
+
+    /*コメントスキップ*/
+    char line[1000];
+    for (int i = 0; i < 4; i++)
+    {
+        fgets(line, sizeof(line), fp);/*四行読み捨てる*/
+    }
+
+    /*データの読み込み*/
+    for (int i = 0; i < N; i++)
+    {
+        fscanf(fp, "%lf %lf %lf %lf %lf %lf", &d[i].ra, &d[i].dec, &d[i].parallax, &d[i].g, &d[i].b, &d[i].r);
+    }
+
+    fclose(fp);
+
+    /*qsort*/
+    qsort(d, N, sizeof(Star), cmp_star);
+
+    /*出力ファイルを開く*/
+    FILE *out = fopen("ngc6397n.dat", "w");
+
+    /*並び替えたものを書き出す*/
+    for (int i = 0; i < N; i++)
+    {
+        fprintf(out, "%lf %lf %lf %lf %lf %lf\n", d[i].ra, d[i].dec, d[i].parallax, d[i].g, d[i].b, d[i].r);
+    }
+
+    fclose(out);
+    
+    return 0;
+}
